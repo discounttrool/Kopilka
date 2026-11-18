@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Копилка — учёт расходов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eceff6;--card:#fff;--ink:#14172b;--mut:#6b7090;--line:#dfe3ef;--acc:#5b4bff;--acc2:#e9e6ff;--ok:#12b886;--warn:#ff8a1f;--bad:#f0436a;--sh:0 1px 0 rgba(20,23,43,.04),0 10px 30px -14px rgba(40,40,110,.25);
+--disp:'Unbounded','Onest',system-ui,sans-serif;--body:'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1020;--card:#181b30;--ink:#eceefb;--mut:#9094b5;--line:#272b48;--acc:#8b7fff;--acc2:#26234d;--sh:0 10px 30px -14px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1020;--card:#181b30;--ink:#eceefb;--mut:#9094b5;--line:#272b48;--acc:#8b7fff;--acc2:#26234d;--sh:0 10px 30px -14px rgba(0,0,0,.6);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 var(--body);padding-bottom:110px}
+.wrap{max-width:760px;margin:0 auto;padding:18px 16px}
+h1,h2,h3{font-family:var(--disp);font-weight:500;margin:0}
+h2{font-size:15px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.top h1{font-size:18px}.top select{width:auto}
+.card{background:var(--card);border-radius:22px;padding:18px;box-shadow:var(--sh);margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.grid2{grid-template-columns:1fr}}
+.hero{display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--bg);border-radius:28px;padding:22px}
+.hero .big{font:700 clamp(26px,7vw,38px)/1.05 var(--disp);letter-spacing:-.02em}
+.hero small{opacity:.7;display:block;margin-top:6px}
+.ringwrap{position:relative;width:118px;height:118px;flex:none}
+.ringwrap span{position:absolute;inset:0;display:grid;place-items:center;font:600 18px var(--disp)}
+.bud{display:flex;gap:8px;margin-top:12px}
+.bud input{background:rgba(255,255,255,.12);color:inherit;border-color:transparent}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button{font:600 14px var(--body);border:0;border-radius:12px;padding:10px 14px;background:var(--acc);color:#fff;cursor:pointer}
+button.ghost{background:var(--acc2);color:var(--acc)}
+button.x{background:none;color:var(--mut);padding:4px 8px;font-size:18px}
+.legend{display:grid;gap:8px;margin-top:12px}
+.lg{display:flex;align-items:center;gap:8px;font-size:14px}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.lg b{margin-left:auto;font-weight:600}
+.row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .t{flex:1;min-width:0}.row .t div:first-child{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .t div+div{font-size:12.5px;color:var(--mut)}
+.amt{font:500 14px var(--disp)}
+.mut{color:var(--mut)}
+.empty{color:var(--mut);padding:14px 0;text-align:center}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-h button{width:38px;padding:8px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .wd{text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px}
+.day{aspect-ratio:1/1.05;border-radius:12px;background:var(--bg);border:2px solid transparent;display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;font-size:12px;color:var(--ink);text-align:left;font-weight:500;position:relative;overflow:hidden}
+.day i{font-style:normal;font-size:10.5px;font-weight:600;line-height:1}
+.day.off{visibility:hidden}
+.day.today{border-color:var(--acc)}
+.day.sel{background:var(--acc);color:#fff}
+.day .h{position:absolute;inset:0;background:var(--warn);pointer-events:none}
+.day>*:not(.h){position:relative}
+.bar{height:10px;border-radius:6px;background:var(--bg);overflow:hidden;margin:8px 0}
+.bar div{height:100%;border-radius:6px;background:var(--acc)}
+.goal .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.goal .head b{font-family:var(--disp);font-weight:500;font-size:14px}
+.inl{display:flex;gap:8px}
+.inl input:first-child{flex:1.3}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+.nav div{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.nav button{background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;padding:6px}
+.nav button.on{color:var(--acc);background:var(--acc2)}
+.nav svg{width:22px;height:22px}
+.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;border-radius:18px;padding:14px 18px;font-size:15px;box-shadow:0 12px 28px -8px var(--acc)}
+.ov{position:fixed;inset:0;background:rgba(10,12,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.ov.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:26px 26px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+@media(min-width:620px){.ov{align-items:center}.sheet{border-radius:26px}}
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cats button{background:var(--bg);color:var(--ink);padding:7px 11px;font-weight:500;border:2px solid transparent}
+.cats button.on{border-color:var(--c);background:var(--card)}
+.sum{display:flex;gap:10px}.sum>div{flex:1}.sum b{display:block;font:500 18px var(--disp)}
+.bank{background:var(--acc);color:#fff;border-radius:26px;padding:20px;margin-bottom:14px;box-shadow:0 14px 30px -14px var(--acc)}
+.bank .bt{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.bank .lbl{font:700 13px var(--disp);letter-spacing:.14em;opacity:.8}
+.bank .big{font:700 clamp(28px,8vw,40px)/1.1 var(--disp);letter-spacing:-.02em;margin-top:4px}
+.bank .pill{background:rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
+.bank .inl{margin-top:14px}
+.bank input{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
+.bank input::placeholder{color:rgba(255,255,255,.7)}
+.bank button{background:#fff;color:#2a2090}
+.bank button.gl{background:rgba(255,255,255,.2);color:#fff}
+.bank .hr{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-top:1px solid rgba(255,255,255,.2);align-items:center}
+.bank .hr button{background:none;color:#fff;padding:0 6px;font-size:17px;opacity:.8}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ach{background:var(--bg);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.ach .e{font-size:26px}.ach b{font-weight:600;font-size:14px}.ach span{font-size:12.5px;color:var(--mut)}
+.ach.lock{opacity:.5}.ach.lock .e{filter:grayscale(1)}
+.ach.got{outline:2px solid var(--ok);outline-offset:-2px}
+.toasts{position:fixed;left:0;right:0;top:calc(14px + env(safe-area-inset-top,0px));display:grid;gap:8px;justify-items:center;z-index:20;pointer-events:none}
+.toast{background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-weight:600;box-shadow:var(--sh);animation:tin .25s ease-out}
+@keyframes tin{from{transform:translateY(-10px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.toast{animation:none}}
+.tag{font:600 11.5px var(--body);border-radius:999px;padding:4px 10px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.tag.can{background:rgba(255,138,31,.16);color:var(--warn)}
+.pin{font-size:20px;flex:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Копилка</h1>
+    <select id="cur" aria-label="Валюта"><option>€</option><option>₽</option><option>$</option><option>₴</option></select></div>
+  <div id="app"></div>
+</div>
+<button class="fab" onclick="openAdd()">+ Расход</button>
+<nav class="nav"><div id="nav"></div></nav>
+<div class="ov" id="ov" onclick="if(event.target===this)closeAdd()"><div class="sheet">
+  <h2 style="margin:0">Новый расход</h2>
+  <input id="fItem" placeholder="На что потратили? Например, молоко">
+  <div class="inl"><input id="fAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Сумма"><input id="fDate" type="date"></div>
+  
+  <div class="cats" id="fCats"></div>
+  <button onclick="saveExp()">Добавить расход</button>
+  <button class="ghost" onclick="closeAdd()">Отмена</button>
+</div></div>
+<script>
+const CATS=[['Еда','#ff8a1f'],['Транспорт','#2fa8ff'],['Дом','#5b4bff'],['Здоровье','#12b886'],['Досуг','#f0436a'],['Одежда','#c06bff'],['Другое','#8c93b3']];
+const KEY='kopilka.v1';
+let S={exp:[],goals:[],buys:[],budget:0,cur:'€',bank:{total:0,hist:[]},ach:{},places:[]};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){};checkAch()};
+const p=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+const parse=s=>{const[a,b,c]=s.split('-');return new Date(+a,+b-1,+c)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>(Math.round(n*100)/100).toLocaleString('ru-RU',{maximumFractionDigits:2})+' '+S.cur;
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=ymd(new Date());
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+let tab='home',selDay=today,calM=new Date();calM.setDate(1);let fCat='Еда';
+const col=c=>(CATS.find(x=>x[0]===c)||CATS[6])[1];
+function weekStart(d=new Date()){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+const sumBy=f=>S.exp.filter(f).reduce((a,e)=>a+e.amt,0);
+const dayOf=d=>sumBy(e=>e.date===d);
+
+const ratio=g=>g.saved/g.target;
+const ACH=[
+{id:'g1',e:'🎯',t:'Первая цель',d:'Создана первая цель',ok:()=>S.goals.length>=1},
+{id:'g25',e:'🌱',t:'Первый шаг',d:'Любая цель накоплена на 25%',ok:()=>S.goals.some(g=>ratio(g)>=.25)},
+{id:'g50',e:'⛰️',t:'Полпути',d:'Любая цель накоплена на 50%',ok:()=>S.goals.some(g=>ratio(g)>=.5)},
+{id:'g100',e:'🏆',t:'Цель достигнута',d:'Накоплена вся сумма цели',ok:()=>S.goals.some(g=>ratio(g)>=1)},
+{id:'g3',e:'👑',t:'Мастер целей',d:'Достигнуты 3 цели',ok:()=>S.goals.filter(g=>ratio(g)>=1).length>=3},
+{id:'b1',e:'🐷',t:'Первый вклад',d:'Первый раз отложили в банк',ok:()=>S.bank.hist.some(h=>h.amt>0)},
+{id:'b5',e:'🔁',t:'Привычка копить',d:'5 вкладов в банк',ok:()=>S.bank.hist.filter(h=>h.amt>0).length>=5},
+{id:'b100',e:'💰',t:'Сотня в банке',d:'В банке 100 или больше',ok:()=>S.bank.total>=100},
+{id:'b1000',e:'💎',t:'Тысячник',d:'В банке 1000 или больше',ok:()=>S.bank.total>=1000}];
+function checkAch(silent){let ch=false;ACH.forEach(a=>{if(!S.ach[a.id]&&a.ok()){S.ach[a.id]=today;ch=true;if(!silent)toast('🏆 Достижение: '+a.t)}});if(ch){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}}
+function toast(t){let c=document.getElementById('toasts');if(!c){c=document.createElement('div');c.id='toasts';c.className='toasts';document.body.appendChild(c)}const d=document.createElement('div');d.className='toast';d.textContent=t;c.appendChild(d);setTimeout(()=>d.remove(),3200)}
+function bankCard(){const bk=S.bank,dep=bk.hist.filter(h=>h.amt>0).length,got=ACH.filter(a=>S.ach[a.id]).length;
+ const hs=bk.hist.slice(-3).reverse().map(h=>{const d=parse(h.date);return `<div class="hr"><span>${d.getDate()}.${p(d.getMonth()+1)} · ${h.amt>0?'отложено':'снято'}${h.left?' (остаток '+fmt(h.left)+')':''}</span><span><b>${h.amt>0?'+':'−'}${fmt(Math.abs(h.amt))}</b><button onclick="delH('${h.id}')" aria-label="Отменить">×</button></span></div>`}).join('');
+ return `<div class="bank"><div class="bt"><div><div class="lbl">БАНК</div><div class="big">${fmt(bk.total)}</div><div style="opacity:.75;font-size:13px;margin-top:2px">Накоплено · вкладов: ${dep}</div></div><button class="pill gl" style="padding:6px 12px" onclick="go('goal')">🏆 ${got}/${ACH.length}</button></div>
+ <div class="inl"><input id="bkL" type="number" inputmode="decimal" min="0" placeholder="Сколько осталось"><button class="gl" onclick="bkA.value=bkL.value">Всё</button></div>
+ <div class="inl" style="margin-top:8px"><input id="bkA" type="number" inputmode="decimal" min="0" placeholder="Сколько откладываю"><button onclick="bank(1)">Отложить</button><button class="gl" onclick="bank(-1)">Снять</button></div>
+ ${hs?'<div style="margin-top:12px">'+hs+'</div>':''}</div>`}
+function bank(s){const a=parseFloat(bkA.value),l=parseFloat(bkL.value);if(!(a>0)){bkA.focus();toast('Введите сумму');return}
+ if(s>0&&l>0&&a>l){toast('Нельзя отложить больше остатка');return}
+ if(s<0&&a>S.bank.total){toast('В банке нет такой суммы');return}
+ S.bank.total+=s*a;S.bank.hist.push({id:uid(),date:today,amt:s*a,left:l>0?l:null});toast((s>0?'Отложено ':'Снято ')+fmt(a));save();render()}
+function delH(id){const h=S.bank.hist.find(x=>x.id===id);if(!h)return;S.bank.total=Math.max(0,S.bank.total-h.amt);S.bank.hist=S.bank.hist.filter(x=>x.id!==id);save();render()}
+function achCard(){const got=ACH.filter(a=>S.ach[a.id]).length;return `<div class="card"><h2>Достижения · ${got} из ${ACH.length}</h2><div class="achs">${ACH.map(a=>{const u=S.ach[a.id],d=u?parse(u):null;return `<div class="ach ${u?'got':'lock'}"><div class="e">${a.e}</div><b>${a.t}</b><span>${u?'Получено '+d.getDate()+'.'+p(d.getMonth()+1):a.d}</span></div>`}).join('')}</div></div>`}
+let pFilter='all';
+const plName=id=>{const x=S.places.find(p=>p.id===id);return x?x.name:''};
+function placesCard(){
+ const L=S.places.filter(x=>pFilter==='all'||x.kind===pFilter);
+ const ch=[['all','Все'],['bought','Покупал'],['can','Можно купить']].map(([k,l])=>`<button class="${pFilter===k?'on':''}" style="--c:var(--acc)" onclick="pFilter='${k}';render()">${l}</button>`).join('');
+ const rows=L.map(x=>{const es=S.exp.filter(e=>e.place===x.id),sm=es.reduce((a,e)=>a+e.amt,0);
+  return `<div class="row"><span class="pin">📍</span><div class="t"><div>${esc(x.name)}</div><div>${x.note?esc(x.note)+(es.length?' · ':''):''}${es.length?'Потрачено '+fmt(sm)+' · '+es.length+' пок.':(x.note?'':'Пока без расходов')}</div></div><button class="tag ${x.kind==='can'?'can':''}" onclick="togP('${x.id}')" title="Сменить тип">${x.kind==='can'?'Можно купить':'Покупал'}</button><button class="x" onclick="delP('${x.id}')" aria-label="Удалить">×</button></div>`}).join('');
+ return `<div class="card"><h2>Места покупок</h2><div class="cats" style="margin-bottom:8px">${ch}</div>${rows||'<div class="empty">Добавьте магазины, рынки или сайты, где покупали или можно купить</div>'}
+  <div class="inl" style="margin-top:12px"><input id="pN" placeholder="Название места"><input id="pNote" placeholder="Что там или почему выбрали"></div>
+  <div class="inl" style="margin-top:8px"><select id="pK"><option value="bought">Покупал</option><option value="can">Можно купить</option></select><button onclick="newP()">Добавить место</button></div>
+  <div class="mut" style="font-size:12.5px;margin-top:8px">Места появляются сами, когда вы указываете их в расходах и в списке покупок. Здесь их можно добавить вручную.</div></div>`}
+function newP(){const n=pN.value.trim();if(!n){pN.focus();return}S.places.push({id:uid(),name:n,note:pNote.value.trim(),kind:pK.value});save();render()}
+function togP(id){const x=S.places.find(p=>p.id===id);x.kind=x.kind==='can'?'bought':'can';save();render()}
+function delP(id){S.places=S.places.filter(p=>p.id!==id);save();render()}
+function getPlace(n,k){n=(n||'').trim();if(!n)return null;let x=S.places.find(p=>p.name.toLowerCase()===n.toLowerCase());if(!x){x={id:uid(),name:n,note:'',kind:k};S.places.push(x)}else if(k==='bought')x.kind='bought';return x.id}
+function placeOpts(){plList.innerHTML=S.places.map(x=>`<option value="${esc(x.name)}">`).join('');fPlace.value=''}
+let editB=null;
+function editP(id){editB=id;render();setTimeout(()=>{const i=document.getElementById('eP');if(i){i.focus();i.select()}},30)}
+function saveP(id){const v=parseFloat(document.getElementById('eP').value);if(!(v>=0)){toast('Введите цену');return}S.buys.find(x=>x.id===id).price=v;editB=null;save();render()}
+const ICON={home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',goal:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'};
+function nav(){const t=[['home','Обзор'],['cal','Календарь'],['goal','Цели'],['list','Расходы']];
+ $nav.innerHTML=t.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="go('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('')}
+const $nav=document.getElementById('nav'),$app=document.getElementById('app');
+function go(t){tab=t;render();scrollTo(0,0)}
+
+function donut(data,size=150){const tot=data.reduce((a,d)=>a+d.v,0);const R=52,C=2*Math.PI*R;let off=0;
+ const arcs=tot?data.map(d=>{const l=d.v/tot*C;const s=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${d.c}" stroke-width="22" stroke-dasharray="${l} ${C-l}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`;off+=l;return s}).join(''):'<circle r="52" cx="70" cy="70" fill="none" stroke="var(--line)" stroke-width="22"/>';
+ return `<svg viewBox="0 0 140 140" width="${size}" height="${size}" role="img" aria-label="Расходы по категориям">${arcs}<text x="70" y="66" text-anchor="middle" fill="var(--mut)" font-size="9" font-family="Onest">за месяц</text><text x="70" y="82" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="600" font-family="Unbounded">${Math.round(tot)}</text></svg>`}
+
+function home(){
+ const ws=weekStart(),days=[...Array(7)].map((_,i)=>{const d=new Date(ws);d.setDate(d.getDate()+i);return ymd(d)});
+ const wk=days.reduce((a,d)=>a+dayOf(d),0),b=S.budget||0,left=b-wk,pct=b?Math.min(wk/b,1):0;
+ const R=50,C=2*Math.PI*R,over=b&&wk>b;
+ const mk=ymd(new Date()).slice(0,7),mon=S.exp.filter(e=>e.date.startsWith(mk));
+ const bc=CATS.map(([n,c])=>({n,c,v:mon.filter(e=>e.cat===n).reduce((a,e)=>a+e.amt,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ const tot=bc.reduce((a,x)=>a+x.v,0);
+ const vals=days.map(dayOf),mx=Math.max(...vals,b?b/7:0,1);
+ const bars=vals.map((v,i)=>{const h=v/mx*100,x=14+i*44;return `<rect x="${x}" y="${120-h}" width="30" height="${Math.max(h,v?3:0)}" rx="8" fill="${days[i]===today?'var(--acc)':'var(--acc2)'}"/><text x="${x+15}" y="138" text-anchor="middle" font-size="11" fill="var(--mut)" font-family="Onest">${DAYS[i]}</text>${v?`<text x="${x+15}" y="${114-h}" text-anchor="middle" font-size="9.5" fill="var(--ink)" font-weight="600" font-family="Onest">${Math.round(v)}</text>`:''}`}).join('');
+ const line=b?`<line x1="6" x2="322" y1="${120-b/7/mx*100}" y2="${120-b/7/mx*100}" stroke="var(--warn)" stroke-dasharray="4 4" stroke-width="1.5"/>`:'';
+ return `<div class="hero"><div style="flex:1;min-width:0">
+   <div style="opacity:.7;font-size:13px">${b?(over?'Перерасход за неделю':'Осталось на неделю'):'Бюджет на неделю не задан'}</div>
+   <div class="big">${b?fmt(Math.abs(left)):fmt(wk)}</div>
+   <small>${b?`Потрачено ${fmt(wk)} из ${fmt(b)}`:'Потрачено за эту неделю'}</small>
+   <div class="bud"><input id="bIn" type="number" inputmode="decimal" min="0" placeholder="Бюджет на неделю" value="${b||''}"><button onclick="setBud()">Задать</button></div></div>
+   <div class="ringwrap"><svg viewBox="0 0 118 118" width="118" height="118"><circle cx="59" cy="59" r="${R}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="11"/><circle cx="59" cy="59" r="${R}" fill="none" stroke="${over?'var(--bad)':'var(--ok)'}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${pct*C} ${C}" transform="rotate(-90 59 59)"/></svg><span>${b?Math.round(wk/b*100)+'%':'—'}</span></div></div>
+ <div style="height:14px"></div>${bankCard()}
+ <div class="card"><h2>Эта неделя по дням</h2><svg viewBox="0 0 328 146" width="100%" role="img" aria-label="Расходы по дням недели">${line}${bars}</svg>${b?'<div class="mut" style="font-size:12.5px">Пунктир — дневной лимит: '+fmt(b/7)+'</div>':''}</div>
+ <div class="card"><h2>${MONTHS[new Date().getMonth()]}: куда уходят деньги</h2>
+  ${tot?`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div style="margin:0 auto">${donut(bc.map(x=>({v:x.v,c:x.c})))}</div><div class="legend" style="flex:1;min-width:180px;margin:0">${bc.map(x=>`<div class="lg"><span class="dot" style="background:${x.c}"></span>${x.n}<b>${fmt(x.v)}</b></div>`).join('')}</div></div>`:'<div class="empty">Пока нет расходов в этом месяце. Нажмите «+ Расход».</div>'}</div>`}
+
+function calendar(){
+ const y=calM.getFullYear(),m=calM.getMonth(),first=(new Date(y,m,1).getDay()+6)%7,n=new Date(y,m+1,0).getDate();
+ const sums=[...Array(n)].map((_,i)=>dayOf(`${y}-${p(m+1)}-${p(i+1)}`)),mx=Math.max(...sums,1);
+ let cells=DAYS.map(d=>`<div class="wd">${d}</div>`).join('')+'<div class="day off"></div>'.repeat(first);
+ for(let i=1;i<=n;i++){const k=`${y}-${p(m+1)}-${p(i)}`,s=sums[i-1];
+  cells+=`<button class="day ${k===today?'today':''} ${k===selDay?'sel':''}" onclick="selDay='${k}';render()"><span class="h" style="opacity:${s?.12+s/mx*.4:0}"></span><span>${i}</span><i>${s?Math.round(s):''}</i></button>`}
+ const list=S.exp.filter(e=>e.date===selDay),dt=parse(selDay);
+ const ms=sums.reduce((a,b)=>a+b,0);
+ return `<div class="card"><div class="cal-h"><button class="ghost" onclick="mv(-1)" aria-label="Назад">‹</button><div style="text-align:center"><h2 style="margin:0">${MONTHS[m]} ${y}</h2><div class="mut" style="font-size:13px">Итого ${fmt(ms)}</div></div><button class="ghost" onclick="mv(1)" aria-label="Вперёд">›</button></div><div class="cal">${cells}</div></div>
+ <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">${dt.getDate()} ${MONTHS[dt.getMonth()].toLowerCase()}</h2><button class="ghost" onclick="openAdd('${selDay}')">+ Добавить</button></div>${expList(list)}</div>`}
+function mv(d){calM.setMonth(calM.getMonth()+d);render()}
+
+function expList(l){return l.length?l.slice().reverse().map(e=>`<div class="row"><span class="dot" style="background:${col(e.cat)};width:12px;height:12px"></span><div class="t"><div>${esc(e.item)}</div><div>${e.cat} · ${parse(e.date).getDate()}.${p(parse(e.date).getMonth()+1)}</div></div><span class="amt">${fmt(e.amt)}</span><button class="x" onclick="delExp('${e.id}')" aria-label="Удалить">×</button></div>`).join(''):'<div class="empty">Расходов нет</div>'}
+
+function goals(){
+ const g=S.goals.map(x=>{const pc=Math.min(x.saved/x.target*100,100);return `<div class="goal row" style="display:block"><div class="head"><span style="font-weight:600">${esc(x.name)}${x.why?`<span class="mut" style="display:block;font-weight:400;font-size:13px">На что: ${esc(x.why)}</span>`:''}</span><button class="x" onclick="delG('${x.id}')" aria-label="Удалить">×</button></div><div class="bar"><div style="width:${pc}%;background:${pc>=100?'var(--ok)':'var(--acc)'}"></div></div><div class="head"><span class="mut">${fmt(x.saved)} из ${fmt(x.target)}</span><b>${Math.round(pc)}%</b></div><div class="inl" style="margin-top:8px"><input type="number" inputmode="decimal" id="g${x.id}" placeholder="Отложить сумму"><button class="ghost" onclick="addG('${x.id}')">Внести</button></div></div>`}).join('');
+ const open=S.buys.filter(b=>!b.done),sumO=open.reduce((a,b)=>a+b.price,0);
+ const bl=S.buys.slice().sort((a,b)=>a.done-b.done).map(b=>`<div class="row"><div class="t" style="${b.done?'opacity:.5;text-decoration:line-through':''}"><div>${esc(b.name)}</div>${editB===b.id&&!b.done?`<div class="inl" style="margin-top:6px"><input id="eP" type="number" inputmode="decimal" min="0" step="0.01" value="${b.price}" aria-label="Цена" onkeydown="if(event.key==='Enter')saveP('${b.id}');if(event.key==='Escape'){editB=null;render()}"><button class="ghost" onclick="saveP('${b.id}')">Сохранить</button></div>`:`<div>${fmt(b.price)}${b.done?'':` <button class="x" style="font-size:14px;padding:0 6px" onclick="editP('${b.id}')" aria-label="Изменить цену">✎</button>`}</div>`}</div>${b.done?'':`<button class="ghost" onclick="buy('${b.id}')">Купил</button>`}<button class="x" onclick="delB('${b.id}')" aria-label="Удалить">×</button></div>`).join('');
+ return `${achCard()}<div class="card"><h2>Глобальные цели</h2>${g||'<div class="empty">Отпуск, машина, подушка безопасности — добавьте первую цель</div>'}
+  <input id="gW" style="margin-top:12px" placeholder="На что коплю? Например, отпуск в Италии"><div class="inl" style="margin-top:8px"><input id="gN" placeholder="Короткое название цели"><input id="gT" type="number" inputmode="decimal" placeholder="Сумма"><button onclick="newG()">+</button></div></div>
+ <div class="card"><h2>Список покупок</h2>${open.length?`<div class="sum" style="margin-bottom:8px"><div><span class="mut">Ещё купить</span><b>${open.length}</b></div><div><span class="mut">Примерно</span><b>${fmt(sumO)}</b></div></div>`:''}${bl||'<div class="empty">Добавьте мелкие покупки: хлеб, лампочка, подарок</div>'}
+  <input id="bN" style="margin-top:12px" placeholder="Название покупки"><div class="inl" style="margin-top:8px"><input id="bP" type="number" inputmode="decimal" placeholder="Цена"><button onclick="newB()">Добавить</button></div>
+  <div class="mut" style="font-size:12.5px;margin-top:8px">Кнопка «Купил» сама запишет расход на сегодня.</div></div>`}
+
+function listTab(){const s=S.exp.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,60);
+ const t=sumBy(()=>true);
+ return `<div class="card"><div class="sum"><div><span class="mut">Всего записей</span><b>${S.exp.length}</b></div><div><span class="mut">Всего потрачено</span><b>${fmt(t)}</b></div></div></div><div class="card"><h2>Последние расходы</h2>${expList(s.reverse())}</div>`}
+
+function render(){nav();$app.innerHTML={home,cal:calendar,goal:goals,list:listTab}[tab]()}
+
+function setBud(){S.budget=Math.max(0,parseFloat(document.getElementById('bIn').value)||0);save();render()}
+function delExp(id){S.exp=S.exp.filter(e=>e.id!==id);save();render()}
+function newG(){const n=gN.value.trim(),t=parseFloat(gT.value);if(!n||!(t>0))return;S.goals.push({id:uid(),name:n,why:gW.value.trim(),target:t,saved:0});save();render()}
+function addG(id){const v=parseFloat(document.getElementById('g'+id).value);if(!(v>0))return;S.goals.find(x=>x.id===id).saved+=v;save();render()}
+function delG(id){S.goals=S.goals.filter(x=>x.id!==id);save();render()}
+function newB(){const n=bN.value.trim(),pr=parseFloat(bP.value)||0;if(!n)return;S.buys.push({id:uid(),name:n,price:pr,done:false});save();render()}
+function delB(id){S.buys=S.buys.filter(x=>x.id!==id);save();render()}
+function buy(id){const b=S.buys.find(x=>x.id===id);b.done=true;S.exp.push({id:uid(),item:b.name,amt:b.price,cat:'Еда',date:today});save();render()}
+
+function openAdd(d){fDate.value=d||today;fItem.value='';fAmt.value='';catUI();ov.classList.add('on');setTimeout(()=>fItem.focus(),50)}
+function closeAdd(){ov.classList.remove('on')}
+function catUI(){fCats.innerHTML=CATS.map(([n,c])=>`<button class="${fCat===n?'on':''}" style="--c:${c}" onclick="fCat='${n}';catUI()">${n}</button>`).join('')}
+function saveExp(){const a=parseFloat(fAmt.value),i=fItem.value.trim();if(!(a>0)){fAmt.focus();return}
+ S.exp.push({id:uid(),item:i||fCat,amt:a,cat:fCat,date:fDate.value||today});save();closeAdd();render()}
+cur.value=S.cur;cur.onchange=()=>{S.cur=cur.value;save();render()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdd();if(e.key==='Enter'&&ov.classList.contains('on'))saveExp()});
+checkAch(1);render();
+</script>
+</body>
+</html>
